@@ -1,5 +1,5 @@
-from src.game_start import GameStart
-from src.game_situation import GameSituation
+from game_start import GameStart
+from game_situation import GameSituation
 
 
 while True:

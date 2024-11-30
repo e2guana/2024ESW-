@@ -1,18 +1,21 @@
-from src.object_controller import ObjectController
-from src.game_situation import GameSituation
+from game_object import ObjectController
+from game_situation import GameSituation
 from PIL import Image, ImageDraw, ImageFont
-from JoyStick import *
-import random
 from colorsys import hsv_to_rgb
+from Joystick import Joystick  # Joystick 클래스 사용
+import random
 
 
 class Background:
     def __init__(self, image_path="assets/background.png"):
+        # Joystick 인스턴스를 통해 화면 크기 가져오기
+        joystick = Joystick()
+        self.__width = joystick.width
+        self.__height = joystick.height
+
         self.__image_path = image_path  # 배경 이미지 경로
-        self.__width = SCREEN_WIDTH  # 화면 너비
-        self.__height = SCREEN_HEIGHT  # 화면 높이
         self.__scroll_speed = 8  # 스크롤 속도
-        self.__crop_point = SCREEN_HEIGHT  # 초기 스크롤 위치
+        self.__crop_point = self.__height  # 초기 스크롤 위치
         self.__fnt = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 30)
 
         # 배경 이미지 로드 및 크기 조정
@@ -32,17 +35,17 @@ class Background:
         """
         # 스크롤 계산
         if self.__crop_point - self.__scroll_speed <= 0:
-            self.__crop_point = self.height
+            self.__crop_point = self.__height
         else:
             self.__crop_point -= self.__scroll_speed
 
         # 이미지 이동
-        image = Image.open(self.__image_path).resize((self.width, self.height))
-        empty_image = Image.new("RGBA", (self.width, self.height))
-        cropped_image1 = image.crop((0, self.__crop_point, self.width, self.height))
-        cropped_image2 = image.crop((0, 0, self.width, self.__crop_point))
+        image = Image.open(self.__image_path).resize((self.__width, self.__height))
+        empty_image = Image.new("RGBA", (self.__width, self.__height))
+        cropped_image1 = image.crop((0, self.__crop_point, self.__width, self.__height))
+        cropped_image2 = image.crop((0, 0, self.__width, self.__crop_point))
         empty_image.paste(cropped_image1, (0, 0))
-        empty_image.paste(cropped_image2, (0, self.height - self.__crop_point))
+        empty_image.paste(cropped_image2, (0, self.__height - self.__crop_point))
         self.__image = empty_image
         return self.__image
 
@@ -78,7 +81,7 @@ class Background:
             background_image.paste(new_image, (enemy_object.image_coord[0], enemy_object.image_coord[1]))
 
         # 게임 상태 텍스트 추가
-        game_text = GameStatus.getGameText()
+        game_text = GameSituation.getGameText()
         self.__set_text(background_image, game_text)
 
         return background_image
