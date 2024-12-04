@@ -3,8 +3,11 @@ def check_collision(entity1, entity2):
     두 객체(entity1, entity2) 간의 충돌을 감지하는 함수.
     Spaceship, Laser, Obstacle 객체를 지원합니다.
     """
+
     # entity1의 충돌 박스 계산
-    if hasattr(entity1, "size"):  # Spaceship 또는 Obstacle인 경우
+    if hasattr(entity1, "get_hitbox"):  # Spaceship인 경우 get_hitbox 사용
+        x1_1, y1_1, x2_1, y2_1 = entity1.get_hitbox()
+    elif hasattr(entity1, "size"):  # Obstacle인 경우
         x1_1 = entity1.x
         y1_1 = entity1.y
         x2_1 = entity1.x + entity1.size
@@ -16,7 +19,9 @@ def check_collision(entity1, entity2):
         y2_1 = entity1.y + entity1.image.height
 
     # entity2의 충돌 박스 계산
-    if hasattr(entity2, "size"):  # Spaceship 또는 Obstacle인 경우
+    if hasattr(entity2, "get_hitbox"):  # Spaceship인 경우 get_hitbox 사용
+        x1_2, y1_2, x2_2, y2_2 = entity2.get_hitbox()
+    elif hasattr(entity2, "size"):  # Obstacle인 경우
         x1_2 = entity2.x
         y1_2 = entity2.y
         x2_2 = entity2.x + entity2.size

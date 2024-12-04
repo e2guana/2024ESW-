@@ -42,6 +42,8 @@ class AstroEvasion:
             for obstacle in self.obstacles:
                 if check_collision(laser, obstacle):
                     obstacle.take_damage(laser.damage)
+                    if obstacle.is_destroyed():
+                        self.score += obstacle.get_score()  # 장애물 점수 추가
                     lasers_to_remove.append(laser)  # 충돌한 레이저 추가
                 break  # 한 레이저가 한 장애물에만 영향을 줌
          # 충돌한 레이저 제거

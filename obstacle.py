@@ -2,13 +2,14 @@ from PIL import Image
 import random
 
 class Obstacle:
-    def __init__(self, width, size=30, speed=5, image_path="assets/Rock1.png", health=2):
+    def __init__(self, width, size=30, speed=5, image_path="assets/Rock1.png", health=2, score=10):
         self.width = width
         self.size = size
         self.speed = speed
         self.x = random.randint(0, width - size)
         self.y = -size
         self.health = health
+        self.score = score    # 장애물 파괴 시 점수
          
         # 장애물 이미지 로드
         self.image = Image.open(image_path).convert("RGBA").resize((size, size))
@@ -26,11 +27,11 @@ class Obstacle:
         self.y += self.speed
 
     def draw(self, base_image):
-        # Draw the obstacle image on the base image
+        # 장애물 이미지 구현
         base_image.paste(self.image, (self.x, self.y), self.image)
 
     def get_hitbox(self):
-        # Return the hitbox as a rectangle (x1, y1, x2, y2)
+        # 히트박스 반환
         return [
             self.x + self.hitbox_x_offset,
             self.y + self.hitbox_y_offset,
@@ -39,19 +40,23 @@ class Obstacle:
         ]
     
     def take_damage(self, damage):
-        """Reduce health by damage amount."""
+        # 데미지 받으면 체력 감소
         self.health -= damage
 
     def is_destroyed(self):
-        """Check if the obstacle is destroyed."""
+        #장애물 파괴 감지
         return self.health <= 0
+    
+    def get_score(self):
+        # 장애물 파괴시 점수 반환
+        return self.score
 
 
 class Rock1(Obstacle):
     def __init__(self, width):
-        super().__init__(width, size=30, speed=5, image_path="assets/Rock1.png",  health=2)
+        super().__init__(width, size=30, speed=5, image_path="assets/Rock1.png",  health=2, score=30)
 
 
 class Rock2(Obstacle):
     def __init__(self, width):
-        super().__init__(width, size=35, speed=3, image_path="assets/Rock2.png", health=4)
+        super().__init__(width, size=35, speed=3, image_path="assets/Rock2.png", health=4, score=50)

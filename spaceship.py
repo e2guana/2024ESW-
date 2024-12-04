@@ -13,6 +13,11 @@ class Spaceship:
         self.lasers = [] 
         self.laser_cooldown = 3  # 레이저 간격
         self.laser_timer = 0 
+        
+        # 히트박스 크기 비율
+        self.hitbox_scale = 0.6
+        self.hitbox_width = int(self.size * self.hitbox_scale)
+        self.hitbox_height = int(self.size * self.hitbox_scale)
 
         # 우주선 이미지 로드
         self.image = Image.open(image_path).convert("RGBA").resize((size, size))
@@ -60,13 +65,22 @@ class Spaceship:
         draw = ImageDraw.Draw(base_image)
         text_x = x_offset + 25  # 숫자를 이미지 바로 오른쪽에 붙여 배치
         text_y = y_offset + 10   # 숫자를 이미지와 수평으로 맞춤
-        draw.text((text_x, text_y), f" {self.health}", fill=(255, 255, 255), anchor="ls")  # 큰 숫자로 표시
+        draw.text((text_x, text_y), f" {self.health}", fill=(255, 255, 255), align="center", width=3)  # 큰 숫자로 표시
     
     def update_lasers(self):
         # 레이저 업데이트
         for laser in self.lasers:
             laser.move()
         self.lasers = [laser for laser in self.lasers if not laser.is_off_screen(self.height)]
+    
+    def get_hitbox(self):
+        # 히트박스 변화
+        hitbox_x1 = self.x + (self.size - self.hitbox_width) // 2
+        hitbox_y1 = self.y + (self.size - self.hitbox_height) // 2
+        hitbox_x2 = hitbox_x1 + self.hitbox_width
+        hitbox_y2 = hitbox_y1 + self.hitbox_height
+        return hitbox_x1, hitbox_y1, hitbox_x2, hitbox_y2
+
     
     def take_damage(self):
         # 체력 감소
