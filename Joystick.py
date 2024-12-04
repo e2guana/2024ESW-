@@ -50,10 +50,5 @@ class Joystick:
 
         # Create blank image for drawing.
         # Make sure to create image with mode 'RGB' for color.
-    @property
-    def width(self):
-        return self.disp.width
-
-    @property
-    def height(self):
-        return self.disp.height
+        self.width = self.disp.width
+        self.height = self.disp.height
