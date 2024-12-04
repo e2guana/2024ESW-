@@ -1,5 +1,5 @@
 from Joystick import Joystick
-from game import SpaceshipGame
+from game import AstroEvasion
 from PIL import Image
 import time
 
@@ -35,7 +35,7 @@ def main():
     show_logo_screen(joystick)
 
     # Start the game
-    game = SpaceshipGame(joystick)
+    game = AstroEvasion(joystick)
 
     while not game.game_over:
         buttons = read_buttons(joystick)
