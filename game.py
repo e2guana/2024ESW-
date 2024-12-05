@@ -5,6 +5,7 @@ from utils import check_collision, calculate_collision_position
 from enemy import Enemy
 from item import Lifeitem
 from collision import Collision
+from explosion import Explosion
 import random
 
 class AstroEvasion:
@@ -21,6 +22,8 @@ class AstroEvasion:
         self.enemies = []  # 적 우주선 리스트
         self.items = []  # 아이템 리스트 추가
         self.collisions = []  # 충돌 표시 리스트
+        self.explosions = []  # 폭발 애니메이션 리스트
+
         self.last_enemy_score = 0
         
     def add_obstacle(self):
@@ -50,35 +53,39 @@ class AstroEvasion:
         
         self.spaceship.update_lasers()
         
-        # 장애물 이동 및 폭발 애니메이션 처리
+        # 장애물 이동
         obstacles_to_remove = []
         for obstacle in self.obstacles:
-            if obstacle.is_exploding:
-                obstacle.update_explosion()
-            else:
-                obstacle.move()
+            obstacle.move()
         
         # 레이저와 장애물 충돌 처리
         lasers_to_remove = []  # 충돌한 레이저
+        obstacles_to_remove = []  # 제거할 장애물
+        
         for laser in self.spaceship.lasers:
             for obstacle in self.obstacles:
                 if check_collision(laser, obstacle):
                     obstacle.take_damage(laser.damage)
-                    if obstacle.health <= 0 and not obstacle.is_exploding:
-                        obstacle.start_explosion() #폭발 시작
-                        self.score += obstacle.get_score()  # 장애물 점수 추가
-                    lasers_to_remove.append(laser)  # 충돌한 레이저 추가
-                break  # 한 레이저가 한 장애물에만 영향을 줌
+                    lasers_to_remove.append(laser)
+                    if obstacle.is_destroyed:
+                        self.explosions.append(
+                            Explosion(obstacle.x, obstacle.y, obstacle.size)
+                        )
+                        self.score += obstacle.get_score()
+                        obstacles_to_remove.append(obstacle)
+                    break  # 한 레이저는 한 장애물만 처리
             
         
         # 충돌한 레이저 제거
         self.spaceship.lasers = [laser for laser in self.spaceship.lasers if laser not in lasers_to_remove]
+         # 제거할 장애물 리스트를 사용해 장애물 제거
+        self.obstacles = [obstacle for obstacle in self.obstacles if obstacle not in obstacles_to_remove]
 
-         # 폭발 애니메이션이 끝난 장애물 제거
-        self.obstacles = [
-            o for o in self.obstacles if not (o.is_destroyed() and not o.is_exploding)
-        ]
-    
+        # 폭발 애니메이션 업데이트
+        self.explosions = [exp for exp in self.explosions if not exp.finished]
+        for explosion in self.explosions:
+            explosion.update()
+        
         # 화면 밖으로 벗어난 장애물 삭제
         self.obstacles = [o for o in self.obstacles if o.y < self.height]
         self.spaceship.lasers = [l for l in self.spaceship.lasers if not l.is_off_screen(self.height)]
@@ -92,8 +99,6 @@ class AstroEvasion:
                     # 충돌 표시 생성
                     collision_x, collision_y = calculate_collision_position(self.spaceship, obstacle)
                     self.collisions.append(Collision(collision_x, collision_y))
-                if not obstacle.is_exploding:
-                    obstacle.start_explosion()  # 충돌한 장애물 폭발 시작
                 obstacles_to_remove.append(obstacle)
                 if self.spaceship.is_destroyed():
                     self.game_over = True
@@ -110,36 +115,38 @@ class AstroEvasion:
         # 적 우주선 추가
         self.add_enemy()
         
-        # 적 이동 및 폭발 처리
-        enemies_to_remove = []
+        # 적 이동
+        enemy_to_remove = []
         for enemy in self.enemies:
-            if enemy.is_exploding:
-                 if enemy.update_explosion():  # 폭발 종료 시 아이템 생성
-                    self.add_item(enemy.x + enemy.size // 2, enemy.y + enemy.size // 2)
-                    enemies_to_remove.append(enemy)
-            else:
-                enemy.move()
-                enemy.shoot()
-                for laser in enemy.lasers:
-                    laser.move()
+            enemy.move()
+            enemy.shoot()
+            for laser in enemy.lasers:
+                laser.move()
+
             
         # 적과 플레이어 레이저 충돌 처리
         lasers_to_remove = []  # 충돌한 레이저
         for laser in self.spaceship.lasers:
             for enemy in self.enemies:
-                if enemy.is_exploding:  # 적이 폭발 중이면 충돌 무시
-                    continue
                 if check_collision(laser, enemy):  # 적과 레이저 충돌 확인
                     enemy.take_damage(laser.damage)  # 적 체력 감소
                     lasers_to_remove.append(laser)
+                    if enemy.is_destroyed:
+                        self.explosions.append(Explosion(enemy.x, enemy.y, enemy.size))
+                        self.add_item(enemy.x, enemy.y)  # 아이템 생성
+                        enemy_to_remove.append(enemy)
                 break
-
                 
         # 충돌한 레이저 제거
         self.spaceship.lasers = [laser for laser in self.spaceship.lasers if laser not in lasers_to_remove]
-        # 폭발 종료된 적 제거
-        self.enemies = [enemy for enemy in self.enemies if not(enemy.is_destroyed() and not enemy.is_exploding)]
-
+        # 제거할 적 리스트를 사용해 적 제거
+        self.enemies = [enemy for enemy in self.enemies if enemy not in enemy_to_remove]
+        # 폭발 애니메이션 업데이트
+        self.explosions = [exp for exp in self.explosions if not exp.finished]
+        for explosion in self.explosions:
+            explosion.update()
+        
+        
         # 적 레이저와 플레이어 충돌 처리
         for enemy in self.enemies:
             lasers_to_remove = []  # 충돌한 레이저 리스트
@@ -191,6 +198,11 @@ class AstroEvasion:
         # 충돌 표시 그리기
         for collision in self.collisions:
             collision.draw(self.image)
+        
+        # 폭발 애니메이션 그리기
+        for explosion in self.explosions:
+            explosion.draw(self.image)
+
         
         # 점수 표시
         draw.text((10, 10), f"Score: {self.score}", fill=(255, 255, 255))  # 흰색 텍스트
