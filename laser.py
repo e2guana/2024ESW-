@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw
 
 class Laser:
-    def __init__(self, x, y, speed=15, damage=1, image_path="assets/Laser_me.png"):
+    def __init__(self, x, y, speed=16, damage=1, image_path="assets/Laser_me.png"):
         self.x = x
         self.y = y
         self.speed = speed
@@ -13,7 +13,7 @@ class Laser:
          
     def move(self):
         """Move the laser upward."""
-        self.y -= self.speed
+        self.y -= self.speed - 5 #촘촘히 나가도록
 
     def draw(self, base_image):
         """Draw the laser image on the base image."""

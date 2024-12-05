@@ -12,19 +12,9 @@ class Obstacle:
         self.health = health
         self.score = score    # 장애물 파괴 시 점수
         self.image = Image.open(image_path).convert("RGBA").resize((size, size))  # 장애물 이미지 로드
-
-        # 폭발 애니메이션 설정
-        self.explosion_frames = [
-            Image.open("assets/Exp2.png").convert("RGBA").resize((size, size)),
-            Image.open("assets/Exp3.png").convert("RGBA").resize((size, size)),
-            Image.open("assets/Exp4.png").convert("RGBA").resize((size, size)),
-        ]
-        self.is_exploding = False
-        self.explosion_frame_index = 0
-        self.explosion_frame_delay = 2  # 각 프레임 유지 시간
-        self.explosion_timer = 0
+        self.is_destroyed = False
         
-        self.collision = None  # 충돌 표시 객체
+        # self.collision = None  # 충돌 표시 객체
         
         # 히트박스 구현
         self.hitbox_scale = 0.7
@@ -39,31 +29,8 @@ class Obstacle:
         self.y += self.speed
 
     def draw(self, base_image):
-        #폭발시 애니메이션
-        if self.is_exploding:
-            current_frame = self.explosion_frames[self.explosion_frame_index]
-            base_image.paste(current_frame, (self.x, self.y), current_frame)
-        else:
-            base_image.paste(self.image, (self.x, self.y), self.image)
-
-        if self.collision:  # 충돌 표시가 있으면 그리기
-            self.collision.draw(base_image)
-            
-    def start_explosion(self):
-        #애니메이션 시작
-        self.is_exploding = True
-        self.explosion_frame_index = 0
-        self.explosion_timer = 0
-
-    def update_explosion(self):
-        #애니메이션 업데이트
-        if self.is_exploding:
-            self.explosion_timer += 1
-            if self.explosion_timer >= self.explosion_frame_delay:
-                self.explosion_timer = 0
-                self.explosion_frame_index += 1
-                if self.explosion_frame_index >= len(self.explosion_frames):
-                    self.is_exploding = False  # 애니메이션 종료
+        base_image.paste(self.image, (self.x, self.y), self.image)
+        
 
     def get_hitbox(self):
         # 히트박스 반환
@@ -85,6 +52,8 @@ class Obstacle:
     def take_damage(self, damage):
         # 데미지 받으면 체력 감소
         self.health -= damage
+        if self.health <= 0:
+                self.is_destroyed = True
 
     def is_destroyed(self):
         #장애물 파괴 감지

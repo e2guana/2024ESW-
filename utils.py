@@ -67,9 +67,6 @@ def calculate_collision_position(entity1, entity2):
     collision_x2 = min(x2_1, x2_2)  # 겹치는 오른쪽 x
     collision_y2 = min(y2_1, y2_2)  # 겹치는 아래쪽 y
 
-    # 겹침이 없는 경우 예외 처리
-    if collision_x1 > collision_x2 or collision_y1 > collision_y2:
-        raise ValueError("겹치지 않음")
 
     # 중앙 좌표 계산
     collision_x = (collision_x1 + collision_x2) // 2
