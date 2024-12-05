@@ -21,14 +21,12 @@ class AstroEvasion:
         self.enemies = []  # 적 우주선 리스트
         self.items = []  # 아이템 리스트 추가
         self.collisions = []  # 충돌 표시 리스트
-
         self.last_enemy_score = 0
         
     def add_obstacle(self):
         # Rock1 생성 확률
         if random.random() < 0.04:  # 4% 확률로 Rock1 생성
             self.obstacles.append(Rock1(self.width))
-
         # Rock2 생성 확률
         if random.random() < 0.02:  # 2% 확률로 Rock2 생성
             self.obstacles.append(Rock2(self.width))
@@ -129,6 +127,8 @@ class AstroEvasion:
         lasers_to_remove = []  # 충돌한 레이저
         for laser in self.spaceship.lasers:
             for enemy in self.enemies:
+                if enemy.is_exploding:  # 적이 폭발 중이면 충돌 무시
+                    continue
                 if check_collision(laser, enemy):  # 적과 레이저 충돌 확인
                     enemy.take_damage(laser.damage)  # 적 체력 감소
                     lasers_to_remove.append(laser)

@@ -30,7 +30,7 @@ class Enemy:
         ]
         self.is_exploding = False
         self.explosion_frame_index = 0
-        self.explosion_frame_delay = 2  # 각 프레임 유지 시간
+        self.explosion_frame_delay = 1  # 각 프레임 유지 시간
         self.explosion_timer = 0
         
         # 랜덤 방향 변경 타이머
